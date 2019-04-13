@@ -1,0 +1,30 @@
+---
+- name: Ensure depdencies are installed.
+  become: True
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - isc-dhcp-server
+
+
+- name: Configure DHCP
+  become: True
+  template:
+    src: "dhcpd.j2"
+    dest: "/etc/dhcp/dhcpd.conf"
+
+- name: Configure isc-dhcp
+  become: True
+  template:
+    src: "isc-dhcp-server.j2"
+    dest: "/etc/default/isc-dhcp-server"
+
+- name: dhcp started
+  become: True
+  service:
+    name: isc-dhcp-server
+    state: restarted
+
+
+ 

@@ -1,0 +1,38 @@
+ddns-update-style none;
+default-lease-time 600;
+max-lease-time 7200;
+#ping true;
+option domain-name-servers 10.10.5.4;
+option domain-name "{{ dhcp.domain }}";
+authorative;
+log-facility local7;
+
+
+failover peer "dhcp-failover" {
+  {{ dhcp.role }}; # declare this to be the primary server
+  address {{ dhcp.ip }};
+  port 647;
+  peer address {{ dhcp.peer }};
+  peer port 647;
+  max-response-delay 30;
+  max-unacked-updates 10;
+  load balance max seconds 3;
+  {% if dhcp.role == "primary" %}
+  mclt 1800;
+  split 128;
+  {% endif %}
+}
+ 
+{% for subnet in dhcp.subnets %}
+subnet {{ subnet.ip }} netmask 255.255.255.0 {
+  option subnet-mask 255.255.255.0;
+  option domain-name-servers {{ dhcp.dns }};
+  option domain-name "{{ dhcp.domain }}";
+  option routers {{ subnet.router }};
+  pool {
+    failover peer "dhcp-failover";
+    max-lease-time 7200;
+    range {{ subnet.range }};
+  }
+}
+{% endfor %}
