@@ -23,16 +23,18 @@ failover peer "dhcp-failover" {
   {% endif %}
 }
  
-{% for subnet in dhcp.subnets %}
-subnet {{ subnet.ip }} netmask 255.255.255.0 {
+{% for key, vlan in vlans.iteritems() %}
+{% if vlan.dhcp is defined %}
+subnet {{ vlan.dhcp.ip }} netmask 255.255.255.0 {
   option subnet-mask 255.255.255.0;
   option domain-name-servers {{ dhcp.dns }};
   option domain-name "{{ dhcp.domain }}";
-  option routers {{ subnet.router }};
+  option routers {{ vlan.dhcp.router }};
   pool {
     failover peer "dhcp-failover";
     max-lease-time 7200;
-    range {{ subnet.range }};
+    range {{ vlan.dhcp.range }};
   }
 }
+{% endif %}
 {% endfor %}

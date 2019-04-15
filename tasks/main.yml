@@ -7,7 +7,6 @@
   with_items:
     - isc-dhcp-server
 
-
 - name: Configure DHCP
   become: True
   template:
